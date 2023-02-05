@@ -11,13 +11,11 @@ pragma solidity >=0.7.0 <0.9.0;
  * @dev calculate digestHash and help bound user's did with the digestHash
  */
 contract digestHash {
-
     // represent the digestHash belongs to which ethereumAddress (digesthash => ethereumAddress)
     mapping(bytes32 => address) public ethereumOwner;
 
     // represent the ethereumAddress owns which didAddress (ethereumAddress => didAddress)
     mapping(address => string) public didOwner;
-
 
     /**
      * @dev calculate the digestHash
@@ -34,10 +32,10 @@ contract digestHash {
     ) public pure returns (bytes32 digest) {
         bytes memory userDidAsBytes = bytes(userDid);
 
-        bytes memory new64 = bytes.concat(roothash, userDidAsBytes);
-        new64 = bytes.concat(new64, expirationDate);
-        new64 = bytes.concat(new64, ctype);
-        digest = keccak256(new64);
+        bytes memory concatResult = bytes.concat(roothash, userDidAsBytes);
+        concatResult = bytes.concat(concatResult, expirationDate);
+        concatResult = bytes.concat(concatResult, ctype);
+        digest = keccak256(concatResult);
     }
 
     /**
@@ -61,7 +59,10 @@ contract digestHash {
         );
 
         // make sure the VC hasn't been uploaded
-        require(ethereumOwner[digest] == address(0),  "This VC has already been registered");
+        require(
+            ethereumOwner[digest] == address(0),
+            "This VC has already been registered"
+        );
 
         if (bytes(didOwner[msg.sender]).length == 0) {
             didOwner[msg.sender] = userDid;
@@ -80,20 +81,19 @@ contract digestHash {
      * @dev used to check the digest belongs to which ethereumAddress
      * @param digest, the digestHash of the VC
      */
-    function checkEthereumOwner(
-        bytes32 digest
-    ) public view returns (address){
+    function checkEthereumOwner(bytes32 digest) public view returns (address) {
         return ethereumOwner[digest];
     }
-
 
     /**
      * @dev used to check the didAddress belongs to which ethereumAddress
      * @param ethereumAddress, the ethereumAddress to lookup
      */
-    function checkDidOwner(
-        address ethereumAddress
-    ) public view returns (string memory){
+    function checkDidOwner(address ethereumAddress)
+        public
+        view
+        returns (string memory)
+    {
         return didOwner[ethereumAddress];
     }
 }
